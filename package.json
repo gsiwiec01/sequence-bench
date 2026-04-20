@@ -4,13 +4,25 @@
   "scripts": {
     "dev": "pnpm --filter dashboard dev",
     "build": "pnpm --filter dashboard build",
-    "lint": "pnpm --filter dashboard lint"
+    "lint": "pnpm --filter dashboard lint",
+    "prepare": "husky"
   },
   "engines": {
     "node": ">=20",
     "pnpm": ">=10"
   },
   "pnpm": {
-    "onlyBuiltDependencies": ["esbuild"]
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
+  },
+  "lint-staged": {
+    "apps/dashboard/**/*.{ts,tsx}": "eslint --fix"
   }
 }
