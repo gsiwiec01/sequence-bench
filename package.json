@@ -5,6 +5,8 @@
     "dev": "pnpm --filter dashboard dev",
     "build": "pnpm --filter dashboard build",
     "lint": "pnpm --filter dashboard lint",
+    "test": "pnpm test:ml-engine",
+    "test:ml-engine": "cd apps/ml-engine && py -m pytest",
     "prepare": "husky"
   },
   "engines": {
