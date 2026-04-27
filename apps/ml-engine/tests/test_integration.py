@@ -86,8 +86,8 @@ def test_gradient_monitor_saves_data():
         )
 
         saved = list(Path(tmp).glob("gradients_*.npz"))
-        assert len(saved) > 0, "GradientMonitor nie zapisał żadnego pliku"
+        assert len(saved) > 0, "GradientMonitor saved no files"
 
         import numpy as np
         with np.load(saved[0]) as data:
-            assert len(data.files) > 0, "Plik gradientów jest pusty"
+            assert len(data.files) > 0, "gradient file is empty"

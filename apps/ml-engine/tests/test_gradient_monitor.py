@@ -22,7 +22,7 @@ def test_hook_captures_gradients() -> None:
         out.mean().backward()
         monitor.step()
 
-        assert len(monitor._buffer) > 0, "Buffer empty — hooks not firing"
+        assert len(monitor._buffer) > 0, "Buffer empty - hooks not firing"
         monitor.detach()
 
 
