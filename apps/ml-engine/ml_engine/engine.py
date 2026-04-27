@@ -72,9 +72,12 @@ class TBPTTEngine:
                 and epoch % self.gradient_log_interval == 0
             )
             if monitor_active:
-                self.gradient_monitor.attach(self.model)
+                self.gradient_monitor.attach()
 
-            train_metrics = self._train_epoch(train_loader)
+            train_metrics = self._train_epoch(
+                train_loader,
+                monitor=self.gradient_monitor if monitor_active else None,
+            )
 
             if monitor_active:
                 self.gradient_monitor.save(epoch)
@@ -114,7 +117,7 @@ class TBPTTEngine:
 
         return history
 
-    def _train_epoch(self, dataloader: Iterable[Any]) -> dict[str, float]:
+    def _train_epoch(self, dataloader: Iterable[Any], monitor: Any = None) -> dict[str, float]:
         self.model.train()
         total_loss = 0.0
         total_steps = 0
@@ -133,6 +136,8 @@ class TBPTTEngine:
                 output, _ = self.model(batch_x, h)
                 loss = self._compute_loss(output, chunk_y)
                 self._backward_step(loss)
+                if monitor is not None:
+                    monitor.step()
                 total_loss += loss.item()
                 total_steps += 1
                 continue
@@ -146,6 +151,8 @@ class TBPTTEngine:
                 output, h_new = self.model(chunk_x, h)
                 loss = self._compute_loss(output, chunk_y)
                 self._backward_step(loss)
+                if monitor is not None:
+                    monitor.step()
 
                 total_loss += loss.item()
                 total_steps += 1
