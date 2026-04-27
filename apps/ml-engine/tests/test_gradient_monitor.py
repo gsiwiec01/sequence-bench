@@ -16,7 +16,7 @@ def test_hook_captures_gradients() -> None:
         monitor = GradientMonitor(model, log_dir=tmp)
         monitor.attach()
 
-        x = torch.randn(2, 5, 10)
+        x = torch.randn(2, 5, 10, requires_grad=True)
         h = model.init_hidden(2, torch.device("cpu"))
         out, _ = model(x, h)
         out.mean().backward()
@@ -33,7 +33,7 @@ def test_save_creates_npz() -> None:
         monitor.attach()
 
         for _ in range(3):
-            x = torch.randn(2, 5, 10)
+            x = torch.randn(2, 5, 10, requires_grad=True)
             h = model.init_hidden(2, torch.device("cpu"))
             out, _ = model(x, h)
             out.mean().backward()
@@ -62,7 +62,7 @@ def test_save_clears_buffer() -> None:
         monitor = GradientMonitor(model, log_dir=tmp)
         monitor.attach()
 
-        x = torch.randn(2, 5, 10)
+        x = torch.randn(2, 5, 10, requires_grad=True)
         h = model.init_hidden(2, torch.device("cpu"))
         model(x, h)[0].mean().backward()
         monitor.step()
@@ -78,7 +78,7 @@ def test_experiment_id_suffix() -> None:
         monitor = GradientMonitor(model, log_dir=tmp)
         monitor.attach()
 
-        x = torch.randn(2, 5, 10)
+        x = torch.randn(2, 5, 10, requires_grad=True)
         h = model.init_hidden(2, torch.device("cpu"))
         model(x, h)[0].mean().backward()
         monitor.step()
@@ -94,7 +94,7 @@ def test_large_file_warning() -> None:
         monitor = GradientMonitor(model, log_dir=tmp, max_file_size_gb=0.0)
         monitor.attach()
 
-        x = torch.randn(2, 5, 10)
+        x = torch.randn(2, 5, 10, requires_grad=True)
         h = model.init_hidden(2, torch.device("cpu"))
         model(x, h)[0].mean().backward()
         monitor.step()
