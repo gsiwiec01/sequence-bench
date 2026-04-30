@@ -31,6 +31,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+from api.routes import experiments
+app.include_router(experiments.router, prefix="/api/experiments", tags=["experiments"])
 
 @app.get("/health")
 async def health() -> dict:
