@@ -17,7 +17,6 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
 
-app = FastAPI(title="sequence-bench API")
 app = FastAPI(
     title="sequence-bench API",
     version="0.1.0",
