@@ -5,6 +5,7 @@ from datetime import datetime
 from sqlalchemy import DateTime, Enum as SAEnum, Integer, JSON, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
+from . import Experiment
 from .database import Base
 
 
@@ -29,4 +30,4 @@ class Dataset(Base):
     config_json: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
-    experiments: Mapped[list["Experiment"]] = relationship(back_populates="dataset")
+    experiments: Mapped[list[Experiment]] = relationship(back_populates="dataset")
