@@ -31,10 +31,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from api.routes import datasets, experiments, gradients
+from api.routes import datasets, experiments, gradients, results
 app.include_router(datasets.router, prefix="/api/datasets", tags=["datasets"])
 app.include_router(experiments.router, prefix="/api/experiments", tags=["experiments"])
 app.include_router(gradients.router, prefix="/api/gradients", tags=["gradients"])
+app.include_router(results.router, prefix="/api/results", tags=["results"])
 
 @app.get("/health")
 async def health() -> dict:
