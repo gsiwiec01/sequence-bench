@@ -31,7 +31,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from api.routes import experiments
+from api.routes import datasets, experiments
+app.include_router(datasets.router, prefix="/api/datasets", tags=["datasets"])
 app.include_router(experiments.router, prefix="/api/experiments", tags=["experiments"])
 
 @app.get("/health")
