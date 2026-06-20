@@ -5,7 +5,6 @@ import random
 import numpy as np
 import torch
 
-
 def set_seed(seed: int) -> None:
     random.seed(seed)
     np.random.seed(seed)
@@ -14,10 +13,8 @@ def set_seed(seed: int) -> None:
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
-
 def get_device() -> torch.device:
     return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 
 def get_gpu_memory_mb() -> float:
     if not torch.cuda.is_available():

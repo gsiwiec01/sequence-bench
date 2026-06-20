@@ -1,7 +1,7 @@
 [project]
 name = "api"
 version = "0.1.0"
-description = "REST API — exposes benchmark results and management endpoints"
+description = "REST API -exposes benchmark results and management endpoints"
 requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.111",
@@ -13,6 +13,9 @@ dependencies = [
     "redis>=5.0",
     "celery>=5.3",
     "psycopg2-binary>=2.9",
+    "python-multipart>=0.0.9",
+    "scikit-learn>=1.4",
+    "matplotlib>=3.8",
 ]
 
 [project.optional-dependencies]

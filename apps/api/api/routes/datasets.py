@@ -4,56 +4,36 @@ import uuid
 from pathlib import Path
 from typing import Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+import numpy as np
+
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from pydantic import BaseModel
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from api.builtin_datasets import BUILTIN_DATASETS
 from api.config import settings
 from api.models.database import get_db
 from api.models.dataset import Dataset, DatasetType
 
 router = APIRouter()
 
-BUILTIN_DATASETS = [
-    {"name": "copy_task_T100", "task_type": "seq2seq", "T": 121, "input_size": 10,
-     "output_size": 9, "metric_name": "accuracy"},
-    {"name": "adding_problem_T200", "task_type": "regression", "T": 200, "input_size": 2,
-     "output_size": 1, "metric_name": "mse"},
-    {"name": "sMNIST", "task_type": "classification", "T": 784, "input_size": 1,
-     "output_size": 10, "metric_name": "accuracy"},
-    {"name": "pMNIST", "task_type": "classification", "T": 784, "input_size": 1,
-     "output_size": 10, "metric_name": "accuracy"},
-    {"name": "penn_treebank", "task_type": "language_model", "T": 35, "input_size": 1,
-     "output_size": 10000, "metric_name": "perplexity"},
-    {"name": "ptbxl_ecg", "task_type": "classification", "T": 1000, "input_size": 12,
-     "output_size": 5, "metric_name": "auc"},
-    {"name": "speech_commands", "task_type": "classification", "T": 100, "input_size": 40,
-     "output_size": 35, "metric_name": "accuracy"},
-    {"name": "etth1_h96", "task_type": "regression", "T": 336, "input_size": 7,
-     "output_size": 7, "metric_name": "mse"},
-]
-
-
 class DatasetResponse(BaseModel):
     id: str
     name: str
     type: str
-    task_type: str
     T: int
     input_size: int
     output_size: int
-    metric_name: str
+    task_type: str
     file_path: Optional[str]
 
     model_config = {"from_attributes": True}
-
 
 @router.get("/", response_model=list[DatasetResponse])
 async def list_datasets(db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(Dataset))
     return result.scalars().all()
-
 
 @router.post("/seed-builtins", status_code=201)
 async def seed_builtin_datasets(db: AsyncSession = Depends(get_db)):
@@ -65,7 +45,7 @@ async def seed_builtin_datasets(db: AsyncSession = Depends(get_db)):
                 Dataset.type == DatasetType.BUILTIN,
             )
         )
-        if existing.scalar_one_or_none():
+        if existing.scalars().first():
             continue
         ds = Dataset(type=DatasetType.BUILTIN, **meta)
         db.add(ds)
@@ -73,17 +53,18 @@ async def seed_builtin_datasets(db: AsyncSession = Depends(get_db)):
     await db.commit()
     return {"created": created}
 
-
 @router.post("/upload", response_model=DatasetResponse, status_code=201)
 async def upload_dataset(
     file: UploadFile = File(...),
     config: str = Form(...),
     name: str = Form(...),
+    task_type: str = Form(...),
     db: AsyncSession = Depends(get_db),
 ):
     file.file.seek(0, 2)
     size_mb = file.file.tell() / 1024 / 1024
     file.file.seek(0)
+
     if size_mb > settings.max_upload_size_mb:
         raise HTTPException(413, f"Plik za duży: {size_mb:.1f} MB > {settings.max_upload_size_mb} MB")
 
@@ -117,11 +98,10 @@ async def upload_dataset(
     ds = Dataset(
         name=name,
         type=DatasetType.CUSTOM,
-        task_type=upload_config.task_type,
         T=meta["T"],
         input_size=meta["d"],
         output_size=upload_config.n_classes or 1,
-        metric_name="accuracy" if upload_config.task_type == "classification" else "mse",
+        task_type=task_type,
         file_path=str(file_path),
         config_json=config_dict,
     )
@@ -130,27 +110,40 @@ async def upload_dataset(
     await db.refresh(ds)
     return ds
 
-
 @router.get("/{dataset_id}", response_model=DatasetResponse)
 async def get_dataset(dataset_id: str, db: AsyncSession = Depends(get_db)):
     ds = await db.get(Dataset, dataset_id)
     if not ds:
         raise HTTPException(404)
-    return ds
 
+    return ds
 
 @router.delete("/{dataset_id}", status_code=204)
 async def delete_dataset(dataset_id: str, db: AsyncSession = Depends(get_db)):
     ds = await db.get(Dataset, dataset_id)
     if not ds:
         raise HTTPException(404)
+
     if ds.type == DatasetType.BUILTIN:
         raise HTTPException(403, "Nie można usunąć wbudowanego datasetu")
+
     if ds.file_path:
         Path(ds.file_path).unlink(missing_ok=True)
+
     await db.delete(ds)
     await db.commit()
 
+@router.get("/{dataset_id}/available_metrics")
+async def get_available_metrics(
+    dataset_id: str,
+    task_type: str = Query(..., description="Typ zadania, np. classification, regression"),
+    db: AsyncSession = Depends(get_db),
+):
+    from api.metrics_registry import AVAILABLE_METRICS
+    ds = await db.get(Dataset, dataset_id)
+    if not ds:
+        raise HTTPException(404)
+    return {"task_type": task_type, "metrics": AVAILABLE_METRICS.get(task_type, [])}
 
 @router.get("/{dataset_id}/preview")
 async def preview_dataset(
@@ -164,7 +157,6 @@ async def preview_dataset(
     if ds.type == DatasetType.BUILTIN or not ds.file_path:
         return {"message": "Podgląd niedostępny dla wbudowanych datasetów"}
 
-    import numpy as np
     try:
         data = np.load(ds.file_path, allow_pickle=False)
         X = data["X"][:n].tolist()

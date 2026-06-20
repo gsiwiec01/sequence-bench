@@ -27,3 +27,6 @@ __pycache__/
 
 # pnpm
 pnpm-debug.log*
+
+.tanstack
+data

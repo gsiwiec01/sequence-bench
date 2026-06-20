@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from torch.utils.data import DataLoader
 
@@ -9,14 +9,14 @@ from torch.utils.data import DataLoader
 @dataclass
 class DatasetMetadata:
     name: str
-    task_type: str  # "classification" | "regression" | "language_model" | "seq2seq"
-    T: int  # nominal sequence length
-    input_size: int  # d — number of input features
-    output_size: int  # number of classes or output dimension
-    metric_name: str  # "accuracy" | "mse" | "perplexity" | "auc"
-    n_train: int
-    n_val: int
-    n_test: int
+    sequence_length: int  # nominal T
+    input_size: int  # d -number of input features
+    output_size: int  # output dimension (= n_classes for classification, 1 for regression)
+    n_classes: int | None = None  # nullable; set for classification-like datasets
+    n_train: int = 0
+    n_val: int = 0
+    n_test: int = 0
+    task_type: str = "classification"
 
 
 class BaseDataModule(ABC):

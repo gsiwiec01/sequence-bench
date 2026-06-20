@@ -1,6 +1,9 @@
+from __future__ import annotations
+
+import json
+
 import numpy as np
 from dataclasses import dataclass, field
-from typing import Optional
 from scipy import stats
 
 @dataclass
@@ -16,6 +19,7 @@ class ExperimentResult:
     metric_name: str
     epoch_history: list[dict] = field(default_factory=list)
 
+
 class ExperimentComparator:
     def degradation_curve(
             self,
@@ -30,10 +34,10 @@ class ExperimentComparator:
 
         output = {}
         for group_name, group_results in groups.items():
-            baselines = [r for r in group_results
-                         if abs(r.k2 / r.T - baseline_k2_ratio) < 0.01]
+            baselines = [r for r in group_results if abs(r.k2 / r.T - baseline_k2_ratio) < 0.01]
             if not baselines:
                 continue
+
             baseline_metric = np.mean([r.best_metric for r in baselines])
 
             by_ratio: dict[float, list[float]] = {}
@@ -53,16 +57,16 @@ class ExperimentComparator:
             }
         return output
 
-    def find_knee_point(
-            self, x_values: list[float], y_values: list[float]
-    ) -> Optional[float]:
+    def find_knee_point(self, x_values: list[float], y_values: list[float]) -> float | None:
         if len(x_values) < 3:
             return None
 
         x = np.array(x_values)
         y = np.array(y_values)
+
         x_n = (x - x.min()) / (x.ptp() + 1e-8)
         y_n = (y - y.min()) / (y.ptp() + 1e-8)
+
         diffs = y_n - x_n
         knee_idx = int(np.argmax(np.abs(np.diff(diffs))))
 
@@ -96,11 +100,7 @@ class ExperimentComparator:
             "mean_b": float(b_vals.mean()),
         }
 
-    def k1_benefit(
-            self,
-            results: list[ExperimentResult],
-            group_by: list[str] = None,
-    ) -> dict:
+    def k1_benefit(self, results: list[ExperimentResult], group_by: list[str] = None, ) -> dict:
         if group_by is None:
             group_by = ["architecture", "dataset"]
 
@@ -124,10 +124,10 @@ class ExperimentComparator:
                     "n_k1_1": len(vals["k1_1"]),
                     "n_k1_eq_k2": len(vals["k1_eq_k2"])
                 }
+
         return output
 
     def export(self, results: list[ExperimentResult], fmt: str = "csv") -> str:
-        import json
         rows = [
             {"id": r.experiment_id, "arch": r.architecture, "dataset": r.dataset,
              "k1": r.k1, "k2": r.k2, "T": r.T, "seed": r.seed,
@@ -142,11 +142,5 @@ class ExperimentComparator:
             header = ",".join(rows[0].keys())
             lines = [",".join(str(v) for v in row.values()) for row in rows]
             return header + "\n" + "\n".join(lines)
-
-        if fmt == "latex":
-            cols = list(rows[0].keys())
-            header = " & ".join(cols) + r" \\"
-            body = "\n".join(" & ".join(str(r[c]) for c in cols) + r" \\" for r in rows)
-            return r"\begin{tabular}{" + "l" * len(cols) + "}\n" + header + "\n" + body + "\n\\end{tabular}"
 
         raise ValueError(f"Nieznany format: {fmt}")

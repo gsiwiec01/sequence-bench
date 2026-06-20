@@ -9,38 +9,148 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResultsRouteImport } from './routes/results'
+import { Route as DatasetsRouteImport } from './routes/datasets'
+import { Route as CompareRouteImport } from './routes/compare'
+import { Route as AnalysisRouteImport } from './routes/analysis'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ExperimentsNewRouteImport } from './routes/experiments/new'
+import { Route as ExperimentsIdRouteImport } from './routes/experiments/$id'
 
+const ResultsRoute = ResultsRouteImport.update({
+  id: '/results',
+  path: '/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DatasetsRoute = DatasetsRouteImport.update({
+  id: '/datasets',
+  path: '/datasets',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalysisRoute = AnalysisRouteImport.update({
+  id: '/analysis',
+  path: '/analysis',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ExperimentsNewRoute = ExperimentsNewRouteImport.update({
+  id: '/experiments/new',
+  path: '/experiments/new',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ExperimentsIdRoute = ExperimentsIdRouteImport.update({
+  id: '/experiments/$id',
+  path: '/experiments/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analysis': typeof AnalysisRoute
+  '/compare': typeof CompareRoute
+  '/datasets': typeof DatasetsRoute
+  '/results': typeof ResultsRoute
+  '/experiments/$id': typeof ExperimentsIdRoute
+  '/experiments/new': typeof ExperimentsNewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analysis': typeof AnalysisRoute
+  '/compare': typeof CompareRoute
+  '/datasets': typeof DatasetsRoute
+  '/results': typeof ResultsRoute
+  '/experiments/$id': typeof ExperimentsIdRoute
+  '/experiments/new': typeof ExperimentsNewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analysis': typeof AnalysisRoute
+  '/compare': typeof CompareRoute
+  '/datasets': typeof DatasetsRoute
+  '/results': typeof ResultsRoute
+  '/experiments/$id': typeof ExperimentsIdRoute
+  '/experiments/new': typeof ExperimentsNewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/analysis'
+    | '/compare'
+    | '/datasets'
+    | '/results'
+    | '/experiments/$id'
+    | '/experiments/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/analysis'
+    | '/compare'
+    | '/datasets'
+    | '/results'
+    | '/experiments/$id'
+    | '/experiments/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/analysis'
+    | '/compare'
+    | '/datasets'
+    | '/results'
+    | '/experiments/$id'
+    | '/experiments/new'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalysisRoute: typeof AnalysisRoute
+  CompareRoute: typeof CompareRoute
+  DatasetsRoute: typeof DatasetsRoute
+  ResultsRoute: typeof ResultsRoute
+  ExperimentsIdRoute: typeof ExperimentsIdRoute
+  ExperimentsNewRoute: typeof ExperimentsNewRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/results': {
+      id: '/results'
+      path: '/results'
+      fullPath: '/results'
+      preLoaderRoute: typeof ResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/datasets': {
+      id: '/datasets'
+      path: '/datasets'
+      fullPath: '/datasets'
+      preLoaderRoute: typeof DatasetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analysis': {
+      id: '/analysis'
+      path: '/analysis'
+      fullPath: '/analysis'
+      preLoaderRoute: typeof AnalysisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +158,31 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/experiments/new': {
+      id: '/experiments/new'
+      path: '/experiments/new'
+      fullPath: '/experiments/new'
+      preLoaderRoute: typeof ExperimentsNewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/experiments/$id': {
+      id: '/experiments/$id'
+      path: '/experiments/$id'
+      fullPath: '/experiments/$id'
+      preLoaderRoute: typeof ExperimentsIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalysisRoute: AnalysisRoute,
+  CompareRoute: CompareRoute,
+  DatasetsRoute: DatasetsRoute,
+  ResultsRoute: ResultsRoute,
+  ExperimentsIdRoute: ExperimentsIdRoute,
+  ExperimentsNewRoute: ExperimentsNewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

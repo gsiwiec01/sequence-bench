@@ -3,7 +3,7 @@ from __future__ import annotations
 import torch
 from torch.utils.data import DataLoader, TensorDataset
 
-from .base import BaseDataModule, DatasetMetadata
+from ml_engine.datasets.base import BaseDataModule, DatasetMetadata
 
 
 class AddingProblemDataModule(BaseDataModule):
@@ -43,12 +43,12 @@ class AddingProblemDataModule(BaseDataModule):
     def metadata(self) -> DatasetMetadata:
         return DatasetMetadata(
             name=f"adding_problem_T{self.T}",
-            task_type="regression",
-            T=self.T,
+            sequence_length=self.T,
             input_size=2,
             output_size=1,
-            metric_name="mse",
+            n_classes=None,
             n_train=self._n["train"],
             n_val=self._n["val"],
             n_test=self._n["test"],
+            task_type="regression",
         )
